@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = "file:./db.sqlite"
-    // url      = env("DATABASE_URL")
+    provider = "postgresql"
+    // url      = "file:./db.sqlite"
+    url      = env("DATABASE_URL")
 }
 
 model Example {
@@ -58,4 +58,18 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+// Self defined types
+
+model Game {
+    id            String  @id @default(cuid())
+    name          String
+    yearPublished String?
+    minPlayers    Int?
+    maxPlayers    Int?
+    minPlaytime   Int?
+    maxPlaytime   Int?
+    description   String?
+    imageUrl      String?
 }
