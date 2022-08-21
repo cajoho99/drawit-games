@@ -1,6 +1,8 @@
+import { Game } from "@prisma/client";
 import type { NextPage } from "next";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
+import Image from "next/image";
 import { useState } from "react";
 import { useMutation } from "react-query";
 import { trpc } from "../utils/trpc";
@@ -44,11 +46,11 @@ const AddGames = () => {
             setBggId(e.target.value);
             console.log(bggId);
           }}
-          className="border text-black w-11/12 p-3 rounded md:w-2/3 lg:w-1/2"
+          className="input input-bordered w-full max-w-xs"
         />
         <div className="h-5" />
         <button
-          className="bg-neutral-700 px-4 py-2 rounded"
+          className="btn btn-primary"
           onClick={() => {
             addGameMutation.mutate({ bggId: parseInt(bggId) });
           }}
@@ -60,6 +62,78 @@ const AddGames = () => {
   );
 };
 
+const GameCard: React.FC<{ game: Game }> = ({ game }) => {
+  const [imageSize, setImageSize] = useState({
+    width: 1,
+    height: 1,
+  });
+
+  return (
+    <div className="flex flex-col w-auto items-center">
+      <div className="card w-96 bg-base-100 shadow-xl">
+        <div className="flex flex-col h-auto w-96 relative">
+          <Image
+            src={game.imageUrl!}
+            layout="responsive"
+            objectFit="contain"
+            onLoadingComplete={(target) => {
+              setImageSize({
+                width: target.naturalWidth,
+                height: target.naturalHeight,
+              });
+            }}
+            width={imageSize.width}
+            height={imageSize.height}
+            alt={"cover image of " + game.name}
+          />
+        </div>
+
+        <div className="card-body">
+          <h2 className="card-title">{game.name}</h2>
+          <div className="card-actions justify-start">
+            <div className="badge badge-outline p-2">{game.yearPublished}</div>
+            <div className="badge badge-outline p-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              {game.minPlayers}-{game.maxPlayers}
+            </div>
+            <div className="badge badge-outline p-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {game.minPlaytime}-{game.maxPlaytime}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="h-20 w-96" />
+    </div>
+  );
+};
+
 const ListGames = () => {
   const { data } = trpc.useQuery(["game.getAll"]);
 
@@ -68,9 +142,10 @@ const ListGames = () => {
   }
 
   return (
-    <div>
+    <div className="columns-3">
       {data.map((g, i) => {
-        return <div key={i}>{g.name}</div>;
+        console.log("game", g);
+        return <GameCard key={g.id} game={g} />;
       })}
     </div>
   );

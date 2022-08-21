@@ -15,4 +15,8 @@ function defineNextConfig(config) {
 export default defineNextConfig({
   reactStrictMode: true,
   swcMinify: true,
+  images: {
+    domains: ["cf.geekdo-images.com"],
+    minimumCacheTTL: 600000000,
+  },
 });
