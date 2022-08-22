@@ -26,8 +26,13 @@ const AddGames = () => {
   const { data } = useSession();
 
   const [bggId, setBggId] = useState("");
+  const utils = trpc.useContext();
 
-  const addGameMutation = trpc.useMutation(["game.addWithBggId"]);
+  const addGameMutation = trpc.useMutation("game.addWithBggId", {
+    onSuccess: () => {
+      utils.refetchQueries(["game.getAll"]);
+    },
+  });
 
   if (!data) {
     return null;
@@ -70,8 +75,8 @@ const GameCard: React.FC<{ game: Game }> = ({ game }) => {
 
   return (
     <div className="flex flex-col w-auto items-center">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="flex flex-col h-auto w-96 relative">
+      <div className="card w-5/6 bg-base-100 shadow-xl">
+        <div className="flex flex-col h-auto w-auto relative">
           <Image
             src={game.imageUrl!}
             layout="responsive"
@@ -142,7 +147,7 @@ const ListGames = () => {
   }
 
   return (
-    <div className="columns-3">
+    <div className="columns-4">
       {data.map((g, i) => {
         console.log("game", g);
         return <GameCard key={g.id} game={g} />;

@@ -16,7 +16,7 @@ export default defineNextConfig({
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ["cf.geekdo-images.com"],
+    domains: ["cf.geekdo-images.com", "gamma.chalmers.it"],
     minimumCacheTTL: 600000000,
   },
 });
