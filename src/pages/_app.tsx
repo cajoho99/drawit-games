@@ -90,7 +90,7 @@ const NavigationHeader = () => {
             </ul>
           </div>
         ) : (
-          <button onClick={() => signIn()}>Logga in</button>
+          <button onClick={() => signIn("gamma")}>Logga in</button>
         )}
       </div>
     </div>
