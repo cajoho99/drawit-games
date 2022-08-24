@@ -35,7 +35,7 @@ const GameCard: React.FC<{ game: Game }> = ({ game }) => {
           )}
         </div>
 
-        <div className="card-body">
+        <div className="card-body mb-14">
           <h2 className="card-title">{game.name}</h2>
           <div className="card-actions justify-start">
             <div className="badge badge-outline p-2">{game.yearPublished}</div>
@@ -76,7 +76,6 @@ const GameCard: React.FC<{ game: Game }> = ({ game }) => {
           </div>
         </div>
       </div>
-      <div className="h-20 w-96" />
     </div>
   );
 };
