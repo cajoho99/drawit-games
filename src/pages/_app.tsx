@@ -33,10 +33,10 @@ const NavigationHeader = () => {
           className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-neutral rounded-box w-52"
         >
           <li>
-            <a>Homepage</a>
+            <a href={"/"}>Homepage</a>
           </li>
           <li>
-            <a>Portfolio</a>
+            <a href={"/game/add"}>Add Game</a>
           </li>
           <li>
             <a>About</a>
@@ -45,7 +45,9 @@ const NavigationHeader = () => {
       </div>
 
       <div className="flex-1">
-        <a className="btn btn-ghost normal-case text-xl">DrawIT Games</a>
+        <a className="btn btn-ghost normal-case text-xl" href={"/"}>
+          DrawIT Games
+        </a>
       </div>
       <div className="flex-none gap-2">
         <div className="form-control">
@@ -88,7 +90,7 @@ const NavigationHeader = () => {
             </ul>
           </div>
         ) : (
-          <button onClick={() => signIn("gamma")}>Logga in</button>
+          <button onClick={() => signIn()}>Logga in</button>
         )}
       </div>
     </div>

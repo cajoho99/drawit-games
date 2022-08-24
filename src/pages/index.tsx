@@ -1,71 +1,9 @@
 import { Game } from "@prisma/client";
 import type { NextPage } from "next";
-import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Image from "next/image";
 import { useState } from "react";
-import { useMutation } from "react-query";
 import { trpc } from "../utils/trpc";
-
-const HomeContents = () => {
-  const { data } = useSession();
-
-  if (!data) {
-    return <button onClick={() => signIn()}>Logga in</button>;
-  }
-
-  return (
-    <>
-      <div>Hej {data.user?.name}!</div>
-      <button onClick={() => signOut()}>Logga ut</button>
-    </>
-  );
-};
-
-const AddGames = () => {
-  const { data } = useSession();
-
-  const [bggId, setBggId] = useState("");
-  const utils = trpc.useContext();
-
-  const addGameMutation = trpc.useMutation("game.addWithBggId", {
-    onSuccess: () => {
-      utils.refetchQueries(["game.getAll"]);
-    },
-  });
-
-  if (!data) {
-    return null;
-  }
-
-  return (
-    <>
-      <div className="flex flex-col items-center justify-center p-10">
-        <input
-          type="text"
-          name="bggId"
-          id="bggIdInput"
-          value={bggId}
-          placeholder="Enter bgg id"
-          onChange={(e) => {
-            setBggId(e.target.value);
-            console.log(bggId);
-          }}
-          className="input input-bordered w-full max-w-xs"
-        />
-        <div className="h-5" />
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            addGameMutation.mutate({ bggId: parseInt(bggId) });
-          }}
-        >
-          Create Game
-        </button>
-      </div>
-    </>
-  );
-};
 
 const GameCard: React.FC<{ game: Game }> = ({ game }) => {
   const [imageSize, setImageSize] = useState({
@@ -77,20 +15,24 @@ const GameCard: React.FC<{ game: Game }> = ({ game }) => {
     <div className="flex flex-col w-auto items-center">
       <div className="card w-5/6 bg-base-100 shadow-xl">
         <div className="flex flex-col h-auto w-auto relative">
-          <Image
-            src={game.imageUrl!}
-            layout="responsive"
-            objectFit="contain"
-            onLoadingComplete={(target) => {
-              setImageSize({
-                width: target.naturalWidth,
-                height: target.naturalHeight,
-              });
-            }}
-            width={imageSize.width}
-            height={imageSize.height}
-            alt={"cover image of " + game.name}
-          />
+          {game.imageUrl ? (
+            <Image
+              src={game.imageUrl}
+              layout="responsive"
+              objectFit="contain"
+              onLoadingComplete={(target) => {
+                setImageSize({
+                  width: target.naturalWidth,
+                  height: target.naturalHeight,
+                });
+              }}
+              width={imageSize.width}
+              height={imageSize.height}
+              alt={"cover image of " + game.name}
+            />
+          ) : (
+            <div>Image loading</div>
+          )}
         </div>
 
         <div className="card-body">
@@ -147,7 +89,7 @@ const ListGames = () => {
   }
 
   return (
-    <div className="columns-4">
+    <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4">
       {data.map((g, i) => {
         console.log("game", g);
         return <GameCard key={g.id} game={g} />;
@@ -164,9 +106,7 @@ const Home: NextPage = () => {
         <meta name="description" content="DrawIT Games" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <HomeContents />
-      <AddGames />
+      <div className="h-16" />
       <ListGames />
     </>
   );

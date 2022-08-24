@@ -1,175 +1,96 @@
-import { SubmitHandler, useForm } from "react-hook-form";
-import { AddGameType, addGameValidator } from "../../shared/add-game-validator";
+import { NextPage } from "next";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { trpc } from "../../utils/trpc";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-const AddGame: React.FC<{}> = () => {
-  const {
-    register,
-    watch,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<AddGameType>({
-    resolver: zodResolver(addGameValidator),
+import { GetServerSideProps } from "next";
+import { unstable_getServerSession as getServerSession } from "next-auth";
+import { authOptions as nextAuthOptions } from "../api/auth/[...nextauth]";
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getServerSession(
+    context.req,
+    context.res,
+    nextAuthOptions
+  );
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/api/auth/signin",
+        permanent: false,
+      },
+    };
+  }
+  return { props: {} };
+};
+
+const AddGames: NextPage = () => {
+  const { data } = useSession();
+
+  const [bggId, setBggId] = useState("");
+  const utils = trpc.useContext();
+
+  const addGameMutation = trpc.useMutation("game.addWithBggId", {
+    onError: () => {
+      alert("Something went wrong!");
+    },
+    onSuccess: () => {
+      utils.refetchQueries(["game.getAll"]);
+      setBggId("");
+      alert("The game was added!");
+    },
   });
 
-  const addGame = trpc.useMutation(["game.add"]);
+  if (!data) {
+    return null;
+  }
 
-  const onSubmit: SubmitHandler<AddGameType> = async (data) => {
-    addGame.mutate(data);
-  };
-
-  // https://www.austinshelby.com/blog/build-a-react-form-with-react-hook-form-and-zod
   return (
-    <div className="flex flex-col items-center">
-      <h1 className="text-xl">Lägg till spel</h1>
-      <div className="drop-shadow-md rounded w-1/2">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <label className="block">
-            <span className="block">Namn</span>
-            <input
-              {...register("name")}
-              type="text"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.name && (
-            <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
-          )}
-
-          <label className="block">
-            <span className="block">Lanseringsår</span>
-            <input
-              {...register("yearPublished")}
-              type="text"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.yearPublished && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.yearPublished.message}
-            </p>
-          )}
-
-          <label className="block">
-            <span className="block">Lägsta antal spelare</span>
-            <input
-              {...register("minPlayers", {
-                valueAsNumber: true,
-              })}
-              type="number"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.minPlayers && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.minPlayers.message}
-            </p>
-          )}
-
-          <label className="block">
-            <span className="block">Högsta antal spelare</span>
-            <input
-              {...register("maxPlayers", {
-                valueAsNumber: true,
-              })}
-              type="number"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.maxPlayers && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.maxPlayers.message}
-            </p>
-          )}
-
-          <label className="block">
-            <span className="block">Minsta speltid</span>
-            <input
-              {...register("minPlaytime", {
-                valueAsNumber: true,
-              })}
-              type="number"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.minPlaytime && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.minPlaytime.message}
-            </p>
-          )}
-
-          <label className="block">
-            <span className="block">Högsta speltid</span>
-            <input
-              {...register("maxPlaytime", {
-                valueAsNumber: true,
-              })}
-              type="number"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.maxPlaytime && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.maxPlaytime.message}
-            </p>
-          )}
-
-          <label className="block">
-            <span className="block">Beskrivning</span>
-            <textarea
-              {...register("description")}
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.description && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.description.message}
-            </p>
-          )}
-
-          <label className="block">
-            <span className="block">Bildurl</span>
-            <input
-              {...register("imageUrl")}
-              type="text"
-              className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              disabled={isSubmitting}
-            />
-          </label>
-
-          {errors.imageUrl && (
-            <p className="text-sm text-red-600 mt-1">
-              {errors.imageUrl.message}
-            </p>
-          )}
-
-          <pre>{JSON.stringify(watch(), null, 2)}</pre>
-          <button
-            type="submit"
-            className="w-full px-8 py-4 flex items-center justify-center uppercase text-white font-semibold bg-blue-600 rounded-lg disabled:bg-gray-100 disabled:text-gray-400"
-            disabled={isSubmitting}
-          >
-            Lägg till spel
-          </button>
-        </form>
+    <>
+      <div className="flex flex-col items-center justify-center p-10 min-h-screen">
+        <input
+          type="text"
+          name="bggId"
+          id="bggIdInput"
+          value={bggId}
+          placeholder="Enter bgg id"
+          onChange={(e) => {
+            setBggId(e.target.value);
+            console.log(bggId);
+          }}
+          className="input input-bordered w-full max-w-xs"
+        />
+        <div className="h-5" />
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            addGameMutation.mutate({ bggId: parseInt(bggId) });
+          }}
+        >
+          Create Game
+        </button>
       </div>
-    </div>
+      {/* <div className="alert alert-success shadow-lg absolute bottom-4">
+        <div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="stroke-current flex-shrink-0 h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>Your game has been added!</span>
+        </div>
+      </div> */}
+    </>
   );
 };
 
-export default AddGame;
+export default AddGames;
